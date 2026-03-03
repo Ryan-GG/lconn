@@ -1,12 +1,20 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import type { User } from '@lconn/shared';
+import { createContext, useContext, ReactNode } from 'react';
+import { authClient } from '../lib/auth-client';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  image?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: () => void;
   logout: () => Promise<void>;
-  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,53 +27,21 @@ export const useAuth = () => {
   return context;
 };
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: session, isPending: loading } = authClient.useSession();
 
-  const refreshUser = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/auth/me`, {
-        credentials: 'include',
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.data);
-      } else {
-        setUser(null);
-      }
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    refreshUser();
-  }, []);
+  const user = session?.user as User | undefined ?? null;
 
   const login = () => {
-    window.location.href = `${API_URL}/api/auth/github`;
+    authClient.signIn.social({ provider: 'github' });
   };
 
   const logout = async () => {
-    try {
-      await fetch(`${API_URL}/api/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      setUser(null);
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
+    await authClient.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

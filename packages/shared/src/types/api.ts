@@ -3,10 +3,11 @@ import { ConnectionSpec, PartSpec } from './connections';
 // User types
 export interface User {
   id: string;
-  githubId: string;
-  githubUsername: string;
-  avatarUrl?: string;
+  name: string;
+  email: string;
+  image?: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 // Part types

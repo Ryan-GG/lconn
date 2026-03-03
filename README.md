@@ -33,7 +33,7 @@ npm install
 2. Create a new OAuth App:
    - Application name: `LCONN Local Development`
    - Homepage URL: `http://localhost:3000`
-   - Authorization callback URL: `http://localhost:3001/api/auth/github/callback`
+   - Authorization callback URL: `http://localhost:3001/api/auth/callback/github`
 3. Copy the Client ID and generate a Client Secret
 
 ### 3. Configure Environment Variables
@@ -51,11 +51,17 @@ Edit `packages/backend/.env` and add your GitHub OAuth credentials:
 DATABASE_URL=postgresql://lconn:lconn_dev@localhost:5432/lconn
 GITHUB_CLIENT_ID=your_github_client_id_here
 GITHUB_CLIENT_SECRET=your_github_client_secret_here
-GITHUB_CALLBACK_URL=http://localhost:3001/api/auth/github/callback
-SESSION_SECRET=your_random_session_secret_here
+BETTER_AUTH_SECRET=your_random_secret_here
+BETTER_AUTH_URL=http://localhost:3001
 PORT=3001
 NODE_ENV=development
 FRONTEND_URL=http://localhost:3000
+```
+
+Generate a `BETTER_AUTH_SECRET` with:
+
+```bash
+openssl rand -base64 32
 ```
 
 **Frontend (.env):**
@@ -129,6 +135,15 @@ The application will be available at:
 2. **Create a Part**: Navigate to "Create Part" and add a LEGO part (e.g., "2x4 Brick")
 3. **Add Connection Spec**: On the part detail page, click "Add Connection Spec"
 4. **Vote**: Upvote or downvote connection specifications
+
+#### Testing Auth Locally
+
+1. Ensure your GitHub OAuth app's callback URL is set to `http://localhost:3001/api/auth/callback/github`
+2. Verify `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `BETTER_AUTH_SECRET`, and `BETTER_AUTH_URL` are set in `packages/backend/.env`
+3. Click "Login with GitHub" — you should be redirected to GitHub, then back to the app with your name and avatar displayed
+4. Refresh the page — your session should persist (sessions are stored in the database, not in memory)
+5. Click "Logout" — your session should be cleared
+6. To inspect sessions, run `npm run db:studio` in `packages/backend` and check the `sessions` table
 
 ### Database Management
 

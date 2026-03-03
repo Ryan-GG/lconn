@@ -4,16 +4,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express from 'express';
-import session from 'express-session';
 import cors from 'cors';
-import passport from './config/auth';
-import authRoutes from './routes/auth';
+import { toNodeHandler } from 'better-auth/node';
+import { auth } from './config/auth';
 import partsRoutes from './routes/parts';
 import connectionsRoutes from './routes/connections';
 import votesRoutes from './routes/votes';
-import { drizzle } from 'drizzle-orm/node-postgres';
-
-const db = drizzle(process.env.DATABASE_URL!);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,29 +19,14 @@ app.use(cors({
   origin: process.env.FRONTEND_URL,
   credentials: true,
 }));
+
+// Mount better-auth handler BEFORE express.json() — it needs raw request body
+app.all('/api/auth/*', toNodeHandler(auth));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session configuration
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET!,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    },
-  })
-);
-
-// Initialize Passport
-app.use(passport.initialize());
-app.use(passport.session());
-
 // Routes
-app.use('/api/auth', authRoutes);
 app.use('/api/parts', partsRoutes);
 app.use('/api/connections', connectionsRoutes);
 app.use('/api/connections', votesRoutes); // Vote routes are under /api/connections/:id/vote

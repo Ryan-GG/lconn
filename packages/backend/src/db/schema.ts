@@ -1,16 +1,56 @@
-import { pgTable, uuid, varchar, text, timestamp, jsonb, pgEnum, unique } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, timestamp, jsonb, pgEnum, unique, boolean, integer } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
-// Users table
+// ─── better-auth tables ───
+
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
-  githubId: varchar('github_id', { length: 255 }).notNull().unique(),
-  githubUsername: varchar('github_username', { length: 255 }).notNull(),
-  avatarUrl: varchar('avatar_url', { length: 500 }),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  emailVerified: boolean('email_verified').notNull().default(false),
+  image: varchar('image', { length: 500 }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-// Parts table
+export const sessions = pgTable('sessions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  token: varchar('token', { length: 255 }).notNull().unique(),
+  expiresAt: timestamp('expires_at').notNull(),
+  ipAddress: varchar('ip_address', { length: 255 }),
+  userAgent: text('user_agent'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const accounts = pgTable('accounts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  accountId: varchar('account_id', { length: 255 }).notNull(),
+  providerId: varchar('provider_id', { length: 255 }).notNull(),
+  accessToken: text('access_token'),
+  refreshToken: text('refresh_token'),
+  accessTokenExpiresAt: timestamp('access_token_expires_at'),
+  refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
+  scope: varchar('scope', { length: 255 }),
+  idToken: text('id_token'),
+  password: varchar('password', { length: 255 }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const verifications = pgTable('verifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  identifier: varchar('identifier', { length: 255 }).notNull(),
+  value: text('value').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// ─── Application tables ───
+
 export const parts = pgTable('parts', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),
@@ -20,7 +60,6 @@ export const parts = pgTable('parts', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
-// Connection specs table
 export const connectionSpecs = pgTable('connection_specs', {
   id: uuid('id').primaryKey().defaultRandom(),
   partId: uuid('part_id').notNull().references(() => parts.id, { onDelete: 'cascade' }),
@@ -30,10 +69,8 @@ export const connectionSpecs = pgTable('connection_specs', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-// Vote type enum
 export const voteTypeEnum = pgEnum('vote_type', ['upvote', 'downvote']);
 
-// Votes table
 export const votes = pgTable('votes', {
   id: uuid('id').primaryKey().defaultRandom(),
   connectionSpecId: uuid('connection_spec_id').notNull().references(() => connectionSpecs.id, { onDelete: 'cascade' }),
@@ -44,11 +81,28 @@ export const votes = pgTable('votes', {
   uniqueUserVote: unique().on(table.connectionSpecId, table.userId),
 }));
 
-// Relations
+// ─── Relations ───
+
 export const usersRelations = relations(users, ({ many }) => ({
   parts: many(parts),
   connectionSpecs: many(connectionSpecs),
   votes: many(votes),
+  sessions: many(sessions),
+  accounts: many(accounts),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, {
+    fields: [sessions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, {
+    fields: [accounts.userId],
+    references: [users.id],
+  }),
 }));
 
 export const partsRelations = relations(parts, ({ one, many }) => ({

@@ -21,14 +21,14 @@ export const Header = () => {
           )}
           {user ? (
             <div style={styles.userMenu}>
-              {user.avatarUrl && (
+              {user.image && (
                 <img
-                  src={user.avatarUrl}
-                  alt={user.githubUsername}
+                  src={user.image}
+                  alt={user.name}
                   style={styles.avatar}
                 />
               )}
-              <span style={styles.username}>{user.githubUsername}</span>
+              <span style={styles.username}>{user.name}</span>
               <button onClick={logout} style={styles.button}>
                 Logout
               </button>
