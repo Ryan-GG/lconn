@@ -6,8 +6,15 @@ dotenv.config();
 export default {
   schema: './src/db/schema.ts',
   out: './src/db/migrations',
-  driver: 'pg',
+  casing: "camelCase",
+  verbose: true,
+  dialect: 'postgresql',
   dbCredentials: {
-    connectionString: process.env.DATABASE_URL!,
+    host: 'localhost',
+    port: 5432,
+    user: 'lconn',
+    password: 'lconn_dev',
+    database: 'lconn',
+    ssl: false,
   },
 } satisfies Config;

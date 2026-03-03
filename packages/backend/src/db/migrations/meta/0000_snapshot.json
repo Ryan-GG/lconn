@@ -1,10 +1,10 @@
 {
-  "id": "0989d5dc-a62d-4f67-aaf2-c45be9435021",
+  "id": "a1be3329-7752-4b36-94d6-241260c4c516",
   "prevId": "00000000-0000-0000-0000-000000000000",
-  "version": "5",
-  "dialect": "pg",
+  "version": "7",
+  "dialect": "postgresql",
   "tables": {
-    "connection_specs": {
+    "public.connection_specs": {
       "name": "connection_specs",
       "schema": "",
       "columns": {
@@ -78,9 +78,12 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "parts": {
+    "public.parts": {
       "name": "parts",
       "schema": "",
       "columns": {
@@ -140,9 +143,12 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "users": {
+    "public.users": {
       "name": "users",
       "schema": "",
       "columns": {
@@ -190,9 +196,12 @@
             "github_id"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
-    "votes": {
+    "public.votes": {
       "name": "votes",
       "schema": "",
       "columns": {
@@ -218,6 +227,7 @@
         "vote_type": {
           "name": "vote_type",
           "type": "vote_type",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
@@ -268,19 +278,27 @@
             "user_id"
           ]
         }
-      }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {
-    "vote_type": {
+    "public.vote_type": {
       "name": "vote_type",
-      "values": {
-        "upvote": "upvote",
-        "downvote": "downvote"
-      }
+      "schema": "public",
+      "values": [
+        "upvote",
+        "downvote"
+      ]
     }
   },
   "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

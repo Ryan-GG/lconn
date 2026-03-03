@@ -11,6 +11,9 @@ import authRoutes from './routes/auth';
 import partsRoutes from './routes/parts';
 import connectionsRoutes from './routes/connections';
 import votesRoutes from './routes/votes';
+import { drizzle } from 'drizzle-orm/node-postgres';
+
+const db = drizzle(process.env.DATABASE_URL!);
 
 const app = express();
 const PORT = process.env.PORT || 3001;

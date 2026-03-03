@@ -10,13 +10,17 @@
     "dev": "npm run dev --workspace=packages/backend & npm run dev --workspace=packages/frontend",
     "dev:backend": "npm run dev --workspace=packages/backend",
     "dev:frontend": "npm run dev --workspace=packages/frontend",
+    "dev:shared": "npm run dev --workspace=packages/shared",
     "build": "npm run build --workspaces",
     "build:backend": "npm run build --workspace=packages/backend",
     "build:frontend": "npm run build --workspace=packages/frontend",
     "build:shared": "npm run build --workspace=packages/shared",
     "typecheck": "npm run typecheck --workspaces",
     "db:generate": "npm run db:generate --workspace=packages/backend",
-    "db:migrate": "npm run db:migrate --workspace=packages/backend"
+    "db:migrate": "npm run db:migrate --workspace=packages/backend",
+    "db:studio": "npm run db:studio --workspace=packages/backend",
+    "start": "npm run start --workspace=packages/backend",
+    "preview": "npm run preview --workspace=packages/frontend"
   },
   "keywords": [
     "lego",
@@ -27,7 +31,6 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "concurrently": "^8.2.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.9.3"
   }
 }
