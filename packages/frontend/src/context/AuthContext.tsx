@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const user = session?.user as User | undefined ?? null;
 
   const login = () => {
-    authClient.signIn.social({ provider: 'github' });
+    authClient.signIn.social({ provider: 'github', callbackURL: '/' });
   };
 
   const logout = async () => {
