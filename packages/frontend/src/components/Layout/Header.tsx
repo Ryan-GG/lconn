@@ -11,14 +11,6 @@ export const Header = () => {
           <h1>LCONN</h1>
         </Link>
         <nav style={styles.nav}>
-          <Link to="/parts" style={styles.link}>
-            Parts
-          </Link>
-          {user && (
-            <Link to="/parts/create" style={styles.link}>
-              Create Part
-            </Link>
-          )}
           {user ? (
             <div style={styles.userMenu}>
               {user.image && (
@@ -67,11 +59,6 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '1.5rem',
-  },
-  link: {
-    color: 'white',
-    textDecoration: 'none',
-    fontSize: '1rem',
   },
   userMenu: {
     display: 'flex',

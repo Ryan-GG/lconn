@@ -1,5 +1,3 @@
-import { ConnectionSpec, PartSpec } from './connections';
-
 // User types
 export interface User {
   id: string;
@@ -8,50 +6,6 @@ export interface User {
   image?: string;
   createdAt: Date;
   updatedAt: Date;
-}
-
-// Part types
-export interface Part {
-  id: string;
-  name: string;
-  partNumber?: string;
-  description?: string;
-  createdBy: string;
-  createdAt: Date;
-}
-
-export interface CreatePartRequest {
-  name: string;
-  partNumber?: string;
-  description?: string;
-}
-
-// Connection spec types
-export interface CreateConnectionSpecRequest {
-  partId: string;
-  connections: any[]; // Will be validated against Connection type
-}
-
-export interface UpdateConnectionSpecRequest {
-  connections: any[]; // Will be validated against Connection type
-}
-
-// Vote types
-export enum VoteType {
-  UPVOTE = 'upvote',
-  DOWNVOTE = 'downvote',
-}
-
-export interface Vote {
-  id: string;
-  connectionSpecId: string;
-  userId: string;
-  voteType: VoteType;
-  createdAt: Date;
-}
-
-export interface VoteRequest {
-  voteType: VoteType;
 }
 
 // Pagination types

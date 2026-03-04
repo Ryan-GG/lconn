@@ -7,9 +7,7 @@ import express from 'express';
 import cors from 'cors';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './config/auth';
-import partsRoutes from './routes/parts';
-import connectionsRoutes from './routes/connections';
-import votesRoutes from './routes/votes';
+
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -25,11 +23,6 @@ app.all('/api/auth/*', toNodeHandler(auth));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Routes
-app.use('/api/parts', partsRoutes);
-app.use('/api/connections', connectionsRoutes);
-app.use('/api/connections', votesRoutes); // Vote routes are under /api/connections/:id/vote
 
 // Health check
 app.get('/health', (req, res) => {

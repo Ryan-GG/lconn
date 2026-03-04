@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, jsonb, pgEnum, unique, boolean, integer } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, timestamp, boolean } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // ─── better-auth tables ───
@@ -49,44 +49,9 @@ export const verifications = pgTable('verifications', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-// ─── Application tables ───
-
-export const parts = pgTable('parts', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  name: varchar('name', { length: 255 }).notNull(),
-  partNumber: varchar('part_number', { length: 100 }),
-  description: text('description'),
-  createdBy: uuid('created_by').notNull().references(() => users.id),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-});
-
-export const connectionSpecs = pgTable('connection_specs', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  partId: uuid('part_id').notNull().references(() => parts.id, { onDelete: 'cascade' }),
-  specData: jsonb('spec_data').notNull(),
-  createdBy: uuid('created_by').notNull().references(() => users.id),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
-
-export const voteTypeEnum = pgEnum('vote_type', ['upvote', 'downvote']);
-
-export const votes = pgTable('votes', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  connectionSpecId: uuid('connection_spec_id').notNull().references(() => connectionSpecs.id, { onDelete: 'cascade' }),
-  userId: uuid('user_id').notNull().references(() => users.id),
-  voteType: voteTypeEnum('vote_type').notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-}, (table) => ({
-  uniqueUserVote: unique().on(table.connectionSpecId, table.userId),
-}));
-
 // ─── Relations ───
 
 export const usersRelations = relations(users, ({ many }) => ({
-  parts: many(parts),
-  connectionSpecs: many(connectionSpecs),
-  votes: many(votes),
   sessions: many(sessions),
   accounts: many(accounts),
 }));
@@ -101,37 +66,6 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
 export const accountsRelations = relations(accounts, ({ one }) => ({
   user: one(users, {
     fields: [accounts.userId],
-    references: [users.id],
-  }),
-}));
-
-export const partsRelations = relations(parts, ({ one, many }) => ({
-  createdBy: one(users, {
-    fields: [parts.createdBy],
-    references: [users.id],
-  }),
-  connectionSpecs: many(connectionSpecs),
-}));
-
-export const connectionSpecsRelations = relations(connectionSpecs, ({ one, many }) => ({
-  part: one(parts, {
-    fields: [connectionSpecs.partId],
-    references: [parts.id],
-  }),
-  createdBy: one(users, {
-    fields: [connectionSpecs.createdBy],
-    references: [users.id],
-  }),
-  votes: many(votes),
-}));
-
-export const votesRelations = relations(votes, ({ one }) => ({
-  connectionSpec: one(connectionSpecs, {
-    fields: [votes.connectionSpecId],
-    references: [connectionSpecs.id],
-  }),
-  user: one(users, {
-    fields: [votes.userId],
     references: [users.id],
   }),
 }));
