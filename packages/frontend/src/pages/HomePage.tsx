@@ -1,3 +1,5 @@
+import { PartsTable } from '../components/PartsTable';
+
 export const HomePage = () => {
   return (
     <div style={styles.container}>
@@ -10,6 +12,7 @@ export const HomePage = () => {
           Welcome to LCONN. Sign in with GitHub to get started.
         </p>
       </div>
+      <PartsTable />
     </div>
   );
 };

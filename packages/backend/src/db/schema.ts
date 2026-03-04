@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, pgEnum, uuid, varchar, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // ─── better-auth tables ───
@@ -48,6 +48,21 @@ export const verifications = pgTable('verifications', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
+
+// ─── LDraw tables ───
+
+export const ldrawPartTypeEnum = pgEnum('ldraw_part_type', ['part', 'subpart', 'primitive']);
+
+export const ldrawParts = pgTable('ldraw_parts', {
+  filename: varchar('filename', { length: 255 }).primaryKey(),
+  description: varchar('description', { length: 500 }).notNull(),
+  partType: ldrawPartTypeEnum('part_type').notNull(),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  index('ldraw_parts_part_type_idx').on(table.partType),
+]);
 
 // ─── Relations ───
 

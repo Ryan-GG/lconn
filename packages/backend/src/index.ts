@@ -7,6 +7,7 @@ import express from 'express';
 import cors from 'cors';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './config/auth';
+import ldrawRoutes from './routes/ldraw';
 
 
 const app = express();
@@ -23,6 +24,9 @@ app.all('/api/auth/*', toNodeHandler(auth));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// LDraw routes
+app.use('/api/ldraw', ldrawRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

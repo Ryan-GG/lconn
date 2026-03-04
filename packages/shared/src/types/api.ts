@@ -26,6 +26,26 @@ export interface PaginatedResponse<T> {
   };
 }
 
+// LDraw types
+export type LdrawPartType = 'part' | 'subpart' | 'primitive';
+
+export interface LdrawPart {
+  filename: string;
+  description: string;
+  partType: LdrawPartType;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface LdrawPartSummary {
+  filename: string;
+  description: string;
+  partType: LdrawPartType;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // API response types
 export interface ApiResponse<T = any> {
   success: boolean;
