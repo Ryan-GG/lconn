@@ -1,15 +1,41 @@
 import { useState } from 'react';
-import { useApi } from '../hooks/useApi';
-import type { LdrawPartSummary, LdrawPartType, PaginatedResponse } from '@lconn/shared';
+import type { SortingState } from '@tanstack/react-table';
+import { useQuery } from '@tanstack/react-query';
+import type { LdrawPartSummary, PaginatedResponse } from '@lconn/shared';
+import { columns } from './parts/columns';
+import { DataTable } from './parts/data-table';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+async function fetchParts(params: URLSearchParams): Promise<PaginatedResponse<LdrawPartSummary>> {
+  const response = await fetch(`${API_URL}/api/ldraw/parts?${params.toString()}`, {
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const result = await response.json();
+  if (!result.success) {
+    throw new Error(result.error || 'Unknown error');
+  }
+  return result.data;
+}
 
 export const PartsTable = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
-  const [partType, setPartType] = useState<LdrawPartType | ''>('part');
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const [sortBy, setSortBy] = useState('filename');
-  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'filename', desc: false },
+  ]);
+
+  const sortBy = sorting[0]?.id ?? 'filename';
+  const order = sorting[0]?.desc ? 'desc' : 'asc';
 
   const params = new URLSearchParams({
     page: String(page),
@@ -17,22 +43,12 @@ export const PartsTable = () => {
     sortBy,
     order,
   });
-  if (partType) params.set('partType', partType);
   if (search) params.set('search', search);
 
-  const { data, loading, error } = useApi<PaginatedResponse<LdrawPartSummary>>(
-    `/api/ldraw/parts?${params.toString()}`,
-  );
-
-  const handleSort = (column: string) => {
-    if (sortBy === column) {
-      setOrder(order === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(column);
-      setOrder('asc');
-    }
-    setPage(1);
-  };
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['parts', page, limit, sortBy, order, search],
+    queryFn: () => fetchParts(params),
+  });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,177 +56,46 @@ export const PartsTable = () => {
     setPage(1);
   };
 
-  const sortIndicator = (column: string) => {
-    if (sortBy !== column) return '';
-    return order === 'asc' ? ' ▲' : ' ▼';
+  const handleSortingChange = (newSorting: SortingState) => {
+    setSorting(newSorting);
+    setPage(1);
   };
 
   return (
-    <div style={styles.wrapper}>
-      <h2 style={styles.heading}>LDraw Parts</h2>
+    <div className="py-8">
+      <h2 className="text-xl mb-4 text-foreground">LDraw Parts</h2>
 
-      <div style={styles.controls}>
-        <form onSubmit={handleSearch} style={styles.searchForm}>
-          <input
+      <div className="flex flex-wrap items-center gap-4 mb-4">
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <Input
             type="text"
             placeholder="Search parts..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            style={styles.searchInput}
+            className="w-[250px]"
           />
-          <button type="submit" style={styles.button}>Search</button>
+          <Button type="submit" variant="outline">Search</Button>
         </form>
-
-        <select
-          value={partType}
-          onChange={(e) => { setPartType(e.target.value as LdrawPartType | ''); setPage(1); }}
-          style={styles.select}
-        >
-          <option value="">All Types</option>
-          <option value="part">Parts</option>
-          <option value="subpart">Sub-parts</option>
-          <option value="primitive">Primitives</option>
-        </select>
       </div>
 
-      {error && <p style={styles.error}>{error}</p>}
+      {error && <p className="text-destructive">{error.message}</p>}
 
-      {loading ? (
-        <p style={styles.loading}>Loading parts...</p>
+      {isLoading ? (
+        <p className="text-muted-foreground">Loading parts...</p>
       ) : !data || data.data.length === 0 ? (
-        <p style={styles.empty}>No parts found.</p>
+        <p className="text-muted-foreground italic">No parts found.</p>
       ) : (
-        <>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th} onClick={() => handleSort('filename')}>
-                  Filename{sortIndicator('filename')}
-                </th>
-                <th style={styles.th} onClick={() => handleSort('description')}>
-                  Description{sortIndicator('description')}
-                </th>
-                <th style={styles.th} onClick={() => handleSort('partType')}>
-                  Type{sortIndicator('partType')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.data.map((part) => (
-                <tr key={part.filename} style={styles.tr}>
-                  <td style={styles.td}>{part.filename}</td>
-                  <td style={styles.td}>{part.description}</td>
-                  <td style={styles.td}>{part.partType}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div style={styles.pagination}>
-            <button
-              onClick={() => setPage(page - 1)}
-              disabled={page <= 1}
-              style={styles.button}
-            >
-              Previous
-            </button>
-            <span style={styles.pageInfo}>
-              Page {data.pagination.page} of {data.pagination.totalPages} ({data.pagination.total} total)
-            </span>
-            <button
-              onClick={() => setPage(page + 1)}
-              disabled={page >= data.pagination.totalPages}
-              style={styles.button}
-            >
-              Next
-            </button>
-          </div>
-        </>
+        <DataTable
+          columns={columns}
+          data={data.data}
+          sorting={sorting}
+          onSortingChange={handleSortingChange}
+          page={data.pagination.page}
+          totalPages={data.pagination.totalPages}
+          total={data.pagination.total}
+          onPageChange={setPage}
+        />
       )}
     </div>
   );
-};
-
-const styles = {
-  wrapper: {
-    padding: '2rem 0',
-  },
-  heading: {
-    fontSize: '1.5rem',
-    marginBottom: '1rem',
-    color: '#333',
-  },
-  controls: {
-    display: 'flex',
-    gap: '1rem',
-    marginBottom: '1rem',
-    flexWrap: 'wrap' as const,
-    alignItems: 'center',
-  },
-  searchForm: {
-    display: 'flex',
-    gap: '0.5rem',
-  },
-  searchInput: {
-    padding: '0.5rem',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    fontSize: '0.9rem',
-    width: '250px',
-  },
-  select: {
-    padding: '0.5rem',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    fontSize: '0.9rem',
-  },
-  button: {
-    padding: '0.5rem 1rem',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    background: '#f5f5f5',
-    cursor: 'pointer',
-    fontSize: '0.9rem',
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse' as const,
-    fontSize: '0.9rem',
-  },
-  th: {
-    textAlign: 'left' as const,
-    padding: '0.75rem',
-    borderBottom: '2px solid #ddd',
-    cursor: 'pointer',
-    userSelect: 'none' as const,
-    color: '#333',
-  },
-  tr: {
-    borderBottom: '1px solid #eee',
-  },
-  td: {
-    padding: '0.75rem',
-    color: '#444',
-  },
-  pagination: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '1rem',
-    marginTop: '1rem',
-  },
-  pageInfo: {
-    color: '#666',
-    fontSize: '0.9rem',
-  },
-  error: {
-    color: '#c00',
-  },
-  loading: {
-    color: '#666',
-  },
-  empty: {
-    color: '#666',
-    fontStyle: 'italic' as const,
-  },
 };
