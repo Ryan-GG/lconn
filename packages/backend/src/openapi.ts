@@ -2,7 +2,8 @@ import {
   OpenAPIRegistry,
   OpenApiGeneratorV31,
 } from '@asteasolutions/zod-to-openapi';
-import { ldrawPartSchema, ldrawPartSummarySchema, listPartsQuerySchema } from './schemas/ldraw';
+import { z } from 'zod';
+import { ldrawPartSchema, ldrawPartSummarySchema, ldrawPartGeometrySchema, listPartsQuerySchema } from './schemas/ldraw';
 import { errorResponseSchema, paginatedResponseSchema, successResponseSchema } from './schemas/common';
 
 const registry = new OpenAPIRegistry();
@@ -32,6 +33,33 @@ registry.registerPath({
     },
     400: {
       description: 'Invalid query parameters',
+      content: {
+        'application/json': { schema: errorResponseSchema },
+      },
+    },
+  },
+});
+
+// GET /api/ldraw/parts/{filename}/geometry
+registry.registerPath({
+  method: 'get',
+  path: '/api/ldraw/parts/{filename}/geometry',
+  summary: 'Get geometry tree for an LDraw part',
+  description: 'Returns the part geometry plus all recursively-referenced subfile geometries.',
+  request: {
+    params: ldrawPartSchema.pick({ filename: true }),
+  },
+  responses: {
+    200: {
+      description: 'Array of part geometries (root + all transitive subfiles)',
+      content: {
+        'application/json': {
+          schema: successResponseSchema(z.array(ldrawPartGeometrySchema)),
+        },
+      },
+    },
+    404: {
+      description: 'Geometry not found',
       content: {
         'application/json': { schema: errorResponseSchema },
       },

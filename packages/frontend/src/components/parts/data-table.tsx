@@ -26,6 +26,9 @@ interface DataTableProps<TData, TValue> {
   totalPages: number;
   total: number;
   onPageChange: (page: number) => void;
+  onRowClick?: (row: TData) => void;
+  selectedRowId?: string;
+  getRowId?: (row: TData) => string;
 }
 
 export function DataTable<TData, TValue>({
@@ -37,6 +40,9 @@ export function DataTable<TData, TValue>({
   totalPages,
   total,
   onPageChange,
+  onRowClick,
+  selectedRowId,
+  getRowId,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
@@ -73,15 +79,23 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const rowId = getRowId ? getRowId(row.original) : row.id;
+                const isSelected = selectedRowId !== undefined && rowId === selectedRowId;
+                return (
+                  <TableRow
+                    key={row.id}
+                    className={`${onRowClick ? 'cursor-pointer' : ''} ${isSelected ? 'bg-muted' : ''}`}
+                    onClick={() => onRowClick?.(row.original)}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">

@@ -8,6 +8,7 @@ const repo = new LdrawPartRepository(db);
 const controller = new LdrawPartController(repo);
 
 router.get('/parts', controller.listParts);
+router.get('/parts/*/geometry', controller.getPartGeometry);
 router.get('/parts/*', controller.getPartByFilename);
 
 export default router;

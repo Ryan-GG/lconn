@@ -11,6 +11,24 @@ export class LdrawPartController {
     sendPaginated(res, result);
   });
 
+  getPartGeometry = typedHandler({}, async (req, res) => {
+    const rawParam = (req.params as Record<string, string>)[0]?.replace(/\\/g, '/');
+    // Strip trailing "/geometry" from the wildcard match
+    const filename = rawParam?.replace(/\/geometry$/, '');
+    if (!filename) {
+      sendError(res, 'Filename is required', 400);
+      return;
+    }
+
+    const geometries = await this.repo.findGeometryTree(filename);
+    if (geometries.length === 0) {
+      sendError(res, 'Geometry not found', 404);
+      return;
+    }
+
+    sendSuccess(res, geometries);
+  });
+
   getPartByFilename = typedHandler({}, async (req, res) => {
     const filename = (req.params as Record<string, string>)[0]?.replace(/\\/g, '/');
     if (!filename) {

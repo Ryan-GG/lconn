@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { LdrawPartSummary, PaginatedResponse } from '@lconn/shared';
 import { columns } from './parts/columns';
 import { DataTable } from './parts/data-table';
+import { PartViewer } from './parts/PartViewer';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -30,6 +31,7 @@ export const PartsTable = () => {
   const [limit] = useState(20);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [selectedFilename, setSelectedFilename] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'filename', desc: false },
   ]);
@@ -94,7 +96,17 @@ export const PartsTable = () => {
           totalPages={data.pagination.totalPages}
           total={data.pagination.total}
           onPageChange={setPage}
+          onRowClick={(row: LdrawPartSummary) => setSelectedFilename(row.filename)}
+          selectedRowId={selectedFilename ?? undefined}
+          getRowId={(row: LdrawPartSummary) => row.filename}
         />
+      )}
+
+      {selectedFilename && (
+        <div className="mt-6">
+          <h3 className="text-lg mb-2 text-foreground">{selectedFilename}</h3>
+          <PartViewer filename={selectedFilename} />
+        </div>
       )}
     </div>
   );

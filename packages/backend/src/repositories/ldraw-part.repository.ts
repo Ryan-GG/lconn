@@ -1,10 +1,10 @@
-import { and, eq, ilike, or, asc, desc } from 'drizzle-orm';
+import { and, eq, ilike, or, asc, desc, sql, inArray } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { z } from 'zod';
-import { ldrawParts } from '../db/schema';
+import { ldrawParts, ldrawPartGeometries, ldrawSubfileRefs } from '../db/schema';
 import type { listPartsQuerySchema } from '../schemas/ldraw';
 import { BaseRepository } from './base.repository';
-import type { LdrawPartSummary, PaginatedResponse } from '@lconn/shared';
+import type { LdrawPartSummary, LdrawPartGeometry, PaginatedResponse } from '@lconn/shared';
 
 type ListPartsParams = z.infer<typeof listPartsQuerySchema>;
 
@@ -53,5 +53,29 @@ export class LdrawPartRepository extends BaseRepository<typeof ldrawParts> {
 
   async findByFilename(filename: string) {
     return this.findOne(eq(ldrawParts.filename, filename));
+  }
+
+  async findGeometryTree(filename: string): Promise<LdrawPartGeometry[]> {
+    // Recursive CTE to collect all transitive child filenames
+    const allFilenames = await this.db.execute<{ filename: string }>(sql`
+      WITH RECURSIVE refs AS (
+        SELECT ${filename}::varchar AS filename
+        UNION
+        SELECT sr.child_filename AS filename
+        FROM ldraw_subfile_refs sr
+        INNER JOIN refs r ON sr.parent_filename = r.filename
+      )
+      SELECT filename FROM refs
+    `);
+
+    const filenames = allFilenames.rows.map((r) => r.filename);
+    if (filenames.length === 0) return [];
+
+    const geometries = await this.db
+      .select()
+      .from(ldrawPartGeometries)
+      .where(inArray(ldrawPartGeometries.filename, filenames));
+
+    return geometries as LdrawPartGeometry[];
   }
 }
