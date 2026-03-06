@@ -1,30 +1,28 @@
 import { Router } from 'express';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
 import { eq, ilike, or, sql, asc, desc, count } from 'drizzle-orm';
+import { db } from '../config/database';
 import { ldrawParts } from '../db/schema';
+import { sendSuccess, sendError } from '../lib/response';
 
 const router = Router();
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
-const db = drizzle(pool);
 
 // GET /api/ldraw/parts — List parts (paginated, excludes content)
 router.get('/parts', async (req, res) => {
   try {
-    const page = Math.max(1, parseInt(req.query.page as string) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
-    const partType = req.query.partType as string | undefined;
+    // Query params are already validated and coerced by express-openapi-validator
+    const page = req.query.page as unknown as number;
+    const limit = req.query.limit as unknown as number;
+    const partType = req.query.partType as 'part' | 'subpart' | 'primitive' | undefined;
     const search = req.query.search as string | undefined;
     const sortBy = (req.query.sortBy as string) || 'filename';
-    const order = (req.query.order as string) === 'desc' ? 'desc' : 'asc';
+    const order = req.query.order as 'asc' | 'desc';
 
     const offset = (page - 1) * limit;
 
     // Build where conditions
     const conditions = [];
-    if (partType && ['part', 'subpart', 'primitive'].includes(partType)) {
-      conditions.push(eq(ldrawParts.partType, partType as 'part' | 'subpart' | 'primitive'));
+    if (partType) {
+      conditions.push(eq(ldrawParts.partType, partType));
     }
     if (search) {
       conditions.push(
@@ -70,21 +68,18 @@ router.get('/parts', async (req, res) => {
 
     const total = totalResult[0]?.total ?? 0;
 
-    res.json({
-      success: true,
-      data: {
-        data: rows,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
+    sendSuccess(res, {
+      data: rows,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
       },
     });
   } catch (err) {
     console.error('Error fetching ldraw parts:', err);
-    res.status(500).json({ success: false, error: 'Failed to fetch parts' });
+    sendError(res, 'Failed to fetch parts', 500);
   }
 });
 
@@ -93,7 +88,7 @@ router.get('/parts/*', async (req, res) => {
   try {
     const filename = (req.params as any)[0]?.replace(/\\/g, '/');
     if (!filename) {
-      return res.status(400).json({ success: false, error: 'Filename is required' });
+      return sendError(res, 'Filename is required', 400);
     }
 
     const [part] = await db
@@ -103,13 +98,13 @@ router.get('/parts/*', async (req, res) => {
       .limit(1);
 
     if (!part) {
-      return res.status(404).json({ success: false, error: 'Part not found' });
+      return sendError(res, 'Part not found', 404);
     }
 
-    res.json({ success: true, data: part });
+    sendSuccess(res, part);
   } catch (err) {
     console.error('Error fetching ldraw part:', err);
-    res.status(500).json({ success: false, error: 'Failed to fetch part' });
+    sendError(res, 'Failed to fetch part', 500);
   }
 });
 
