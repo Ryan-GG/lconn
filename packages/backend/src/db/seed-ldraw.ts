@@ -3,8 +3,9 @@ import { Pool } from 'pg';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
-import { ldrawParts } from './schema';
+import { ldrawParts, ldrawPartGeometries, ldrawSubfileRefs } from './schema';
 import { sql } from 'drizzle-orm';
+import { parseLdrawContent } from '../lib/ldraw-parser';
 
 dotenv.config();
 
@@ -156,6 +157,66 @@ async function seed() {
   }
 
   console.log(`\nSeeding complete! Inserted/updated ${inserted} parts.`);
+
+  // ─── Parse geometry and subfile refs ───
+  console.log('\nParsing geometry from all parts...');
+
+  const geometryRecords: { filename: string; subfileRefs: unknown; lines: unknown; triangles: unknown; quads: unknown }[] = [];
+  const refRecords: { parentFilename: string; childFilename: string }[] = [];
+
+  for (const part of allParts) {
+    const parsed = parseLdrawContent(part.content);
+    geometryRecords.push({
+      filename: part.filename,
+      subfileRefs: parsed.subfileRefs,
+      lines: parsed.lines,
+      triangles: parsed.triangles,
+      quads: parsed.quads,
+    });
+    for (const ref of parsed.subfileRefs) {
+      refRecords.push({ parentFilename: part.filename, childFilename: ref.filename });
+    }
+  }
+
+  console.log(`Parsed ${geometryRecords.length} geometry records, ${refRecords.length} subfile refs`);
+
+  // Batch upsert geometry
+  console.log('Inserting geometry records...');
+  let geoInserted = 0;
+  for (let i = 0; i < geometryRecords.length; i += BATCH_SIZE) {
+    const batch = geometryRecords.slice(i, i + BATCH_SIZE);
+    await db
+      .insert(ldrawPartGeometries)
+      .values(batch)
+      .onConflictDoUpdate({
+        target: ldrawPartGeometries.filename,
+        set: {
+          subfileRefs: sql`excluded.subfile_refs`,
+          lines: sql`excluded.lines`,
+          triangles: sql`excluded.triangles`,
+          quads: sql`excluded.quads`,
+        },
+      });
+    geoInserted += batch.length;
+    if (geoInserted % 2000 < BATCH_SIZE) {
+      console.log(`  Geometry progress: ${geoInserted}/${geometryRecords.length}`);
+    }
+  }
+
+  // Truncate and re-insert subfile refs (re-derived each seed run)
+  console.log('Inserting subfile ref graph...');
+  await db.delete(ldrawSubfileRefs);
+  let refsInserted = 0;
+  for (let i = 0; i < refRecords.length; i += BATCH_SIZE) {
+    const batch = refRecords.slice(i, i + BATCH_SIZE);
+    await db.insert(ldrawSubfileRefs).values(batch);
+    refsInserted += batch.length;
+    if (refsInserted % 5000 < BATCH_SIZE) {
+      console.log(`  Refs progress: ${refsInserted}/${refRecords.length}`);
+    }
+  }
+
+  console.log(`\nGeometry seeding complete! ${geoInserted} geometries, ${refsInserted} refs.`);
   await pool.end();
   process.exit(0);
 }

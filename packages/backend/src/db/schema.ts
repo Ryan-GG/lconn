@@ -1,4 +1,4 @@
-import { pgTable, pgEnum, uuid, varchar, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
+import { pgTable, pgEnum, uuid, varchar, text, timestamp, boolean, index, jsonb, serial } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // ─── better-auth tables ───
@@ -64,6 +64,29 @@ export const ldrawParts = pgTable('ldraw_parts', {
   index('ldraw_parts_part_type_idx').on(table.partType),
 ]);
 
+// ─── LDraw geometry tables ───
+
+export const ldrawPartGeometries = pgTable('ldraw_part_geometries', {
+  filename: varchar('filename', { length: 255 })
+    .primaryKey()
+    .references(() => ldrawParts.filename, { onDelete: 'cascade' }),
+  subfileRefs: jsonb('subfile_refs').notNull().default([]),
+  lines: jsonb('lines').notNull().default([]),
+  triangles: jsonb('triangles').notNull().default([]),
+  quads: jsonb('quads').notNull().default([]),
+});
+
+export const ldrawSubfileRefs = pgTable('ldraw_subfile_refs', {
+  id: serial('id').primaryKey(),
+  parentFilename: varchar('parent_filename', { length: 255 })
+    .notNull()
+    .references(() => ldrawParts.filename, { onDelete: 'cascade' }),
+  childFilename: varchar('child_filename', { length: 255 }).notNull(),
+}, (table) => [
+  index('ldraw_subfile_refs_parent_idx').on(table.parentFilename),
+  index('ldraw_subfile_refs_child_idx').on(table.childFilename),
+]);
+
 // ─── Relations ───
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -82,5 +105,27 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
   user: one(users, {
     fields: [accounts.userId],
     references: [users.id],
+  }),
+}));
+
+export const ldrawPartsRelations = relations(ldrawParts, ({ one, many }) => ({
+  geometry: one(ldrawPartGeometries, {
+    fields: [ldrawParts.filename],
+    references: [ldrawPartGeometries.filename],
+  }),
+  subfileRefs: many(ldrawSubfileRefs),
+}));
+
+export const ldrawPartGeometriesRelations = relations(ldrawPartGeometries, ({ one }) => ({
+  part: one(ldrawParts, {
+    fields: [ldrawPartGeometries.filename],
+    references: [ldrawParts.filename],
+  }),
+}));
+
+export const ldrawSubfileRefsRelations = relations(ldrawSubfileRefs, ({ one }) => ({
+  parent: one(ldrawParts, {
+    fields: [ldrawSubfileRefs.parentFilename],
+    references: [ldrawParts.filename],
   }),
 }));
