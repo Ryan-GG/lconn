@@ -28,25 +28,44 @@ export const listPartsQuerySchema = paginationQuerySchema.extend({
 
 // ─── Geometry schemas ───
 
+export const vertexSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+  z: z.number(),
+}).openapi('Vertex');
+
+export const transformMatrixSchema = z.object({
+  x: z.number(), y: z.number(), z: z.number(),
+  a: z.number(), b: z.number(), c: z.number(),
+  d: z.number(), e: z.number(), f: z.number(),
+  g: z.number(), h: z.number(), i: z.number(),
+}).openapi('TransformMatrix');
+
 export const ldrawSubfileRefSchema = z.object({
   colorCode: z.number(),
   filename: z.string(),
-  transform: z.array(z.number()),
+  transform: transformMatrixSchema,
 }).openapi('LdrawSubfileRef');
 
 export const ldrawLineSegmentSchema = z.object({
   colorCode: z.number(),
-  vertices: z.array(z.number()),
+  v1: vertexSchema,
+  v2: vertexSchema,
 }).openapi('LdrawLineSegment');
 
 export const ldrawTriangleSchema = z.object({
   colorCode: z.number(),
-  vertices: z.array(z.number()),
+  v1: vertexSchema,
+  v2: vertexSchema,
+  v3: vertexSchema,
 }).openapi('LdrawTriangle');
 
 export const ldrawQuadSchema = z.object({
   colorCode: z.number(),
-  vertices: z.array(z.number()),
+  v1: vertexSchema,
+  v2: vertexSchema,
+  v3: vertexSchema,
+  v4: vertexSchema,
 }).openapi('LdrawQuad');
 
 export const ldrawPartGeometrySchema = z.object({

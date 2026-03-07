@@ -40,8 +40,8 @@ function resolveGeometry(
 
   // Transform and collect line segments
   for (const line of geom.lines) {
-    for (let i = 0; i < 6; i += 3) {
-      v.set(line.vertices[i], line.vertices[i + 1], line.vertices[i + 2]);
+    for (const vert of [line.v1, line.v2]) {
+      v.set(vert.x, vert.y, vert.z);
       v.applyMatrix4(parentMatrix);
       lines.push(v.x, v.y, v.z);
     }
@@ -49,8 +49,8 @@ function resolveGeometry(
 
   // Transform and collect triangles
   for (const tri of geom.triangles) {
-    for (let i = 0; i < 9; i += 3) {
-      v.set(tri.vertices[i], tri.vertices[i + 1], tri.vertices[i + 2]);
+    for (const vert of [tri.v1, tri.v2, tri.v3]) {
+      v.set(vert.x, vert.y, vert.z);
       v.applyMatrix4(parentMatrix);
       triangles.push(v.x, v.y, v.z);
     }
@@ -58,12 +58,11 @@ function resolveGeometry(
 
   // Transform and collect quads (split into 2 triangles)
   for (const quad of geom.quads) {
-    const qv: THREE.Vector3[] = [];
-    for (let i = 0; i < 12; i += 3) {
-      const p = new THREE.Vector3(quad.vertices[i], quad.vertices[i + 1], quad.vertices[i + 2]);
+    const qv = [quad.v1, quad.v2, quad.v3, quad.v4].map((vert) => {
+      const p = new THREE.Vector3(vert.x, vert.y, vert.z);
       p.applyMatrix4(parentMatrix);
-      qv.push(p);
-    }
+      return p;
+    });
     // Triangle 1: 0-1-2
     triangles.push(qv[0].x, qv[0].y, qv[0].z, qv[1].x, qv[1].y, qv[1].z, qv[2].x, qv[2].y, qv[2].z);
     // Triangle 2: 0-2-3
@@ -72,12 +71,12 @@ function resolveGeometry(
 
   // Recurse into subfile references
   for (const ref of geom.subfileRefs) {
-    const t = ref.transform; // [x, y, z, a, b, c, d, e, f, g, h, i]
+    const t = ref.transform;
     const childMatrix = new THREE.Matrix4();
     childMatrix.set(
-      t[3], t[4], t[5], t[0],
-      t[6], t[7], t[8], t[1],
-      t[9], t[10], t[11], t[2],
+      t.a, t.b, t.c, t.x,
+      t.d, t.e, t.f, t.y,
+      t.g, t.h, t.i, t.z,
       0, 0, 0, 1,
     );
     const combined = new THREE.Matrix4().multiplyMatrices(parentMatrix, childMatrix);

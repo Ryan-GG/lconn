@@ -36,6 +36,20 @@
       "when": 1772837377392,
       "tag": "0004_exotic_newton_destine",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1772942400000,
+      "tag": "0005_transform_geometry_vertices",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772942500000,
+      "tag": "0006_transform_subfile_ref_matrix",
+      "breakpoints": true
     }
   ]
 }

@@ -47,25 +47,44 @@ export interface LdrawPartSummary {
 }
 
 // LDraw geometry types (for wireframe rendering)
+export interface Vertex {
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface TransformMatrix {
+  x: number; y: number; z: number;
+  a: number; b: number; c: number;
+  d: number; e: number; f: number;
+  g: number; h: number; i: number;
+}
+
 export interface LdrawSubfileRef {
   colorCode: number;
   filename: string;
-  transform: number[]; // [x, y, z, a, b, c, d, e, f, g, h, i] — 12 values from spec
+  transform: TransformMatrix;
 }
 
 export interface LdrawLineSegment {
   colorCode: number;
-  vertices: number[]; // [x1, y1, z1, x2, y2, z2]
+  v1: Vertex;
+  v2: Vertex;
 }
 
 export interface LdrawTriangle {
   colorCode: number;
-  vertices: number[]; // [x1, y1, z1, ..., x3, y3, z3] — 9 values
+  v1: Vertex;
+  v2: Vertex;
+  v3: Vertex;
 }
 
 export interface LdrawQuad {
   colorCode: number;
-  vertices: number[]; // [x1, y1, z1, ..., x4, y4, z4] — 12 values
+  v1: Vertex;
+  v2: Vertex;
+  v3: Vertex;
+  v4: Vertex;
 }
 
 export interface LdrawPartGeometry {
