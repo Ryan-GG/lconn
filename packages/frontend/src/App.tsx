@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { Header } from './components/Layout/Header';
 import { HomePage } from './pages/HomePage';
+import { PartsPage } from './pages/PartsPage';
 
 const queryClient = new QueryClient();
 
@@ -16,6 +17,7 @@ function App() {
             <main>
               <Routes>
                 <Route path="/" element={<HomePage />} />
+                <Route path="/parts" element={<PartsPage />} />
               </Routes>
             </main>
           </div>

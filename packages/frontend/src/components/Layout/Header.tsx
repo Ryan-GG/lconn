@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 export const Header = () => {
   const { user, login, logout } = useAuth();
 
@@ -10,6 +12,17 @@ export const Header = () => {
         <Link to="/" style={styles.logo}>
           <h1>LCONN</h1>
         </Link>
+        <nav style={styles.nav}>
+          <Link to="/parts" style={styles.navLink}>Parts</Link>
+          <a
+            href={`${API_URL}/api/docs`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={styles.navLink}
+          >
+            API Docs
+          </a>
+        </nav>
         <nav style={styles.nav}>
           {user ? (
             <div style={styles.userMenu}>
@@ -72,6 +85,12 @@ const styles = {
   },
   username: {
     fontSize: '0.9rem',
+  },
+  navLink: {
+    color: 'white',
+    textDecoration: 'none',
+    fontSize: '0.9rem',
+    opacity: 0.9,
   },
   button: {
     padding: '0.5rem 1rem',
