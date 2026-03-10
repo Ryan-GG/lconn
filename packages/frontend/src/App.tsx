@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { Header } from './components/Layout/Header';
 import { HomePage } from './pages/HomePage';
 import { PartsPage } from './pages/PartsPage';
+import { SubmissionsPage } from './pages/SubmissionsPage';
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/parts" element={<PartsPage />} />
+                <Route path="/parts/:filename/submissions" element={<SubmissionsPage />} />
               </Routes>
             </main>
           </div>

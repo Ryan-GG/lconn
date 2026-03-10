@@ -1,9 +1,9 @@
-import { PartsTable } from '../components/PartsTable';
+import { PartsGrid } from '../components/PartsGrid';
 
 export const PartsPage = () => {
   return (
     <div style={styles.container}>
-      <PartsTable />
+      <PartsGrid />
     </div>
   );
 };
