@@ -4,7 +4,7 @@ export function SubmissionsPage() {
   const { filename } = useParams<{ filename: string }>();
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem 1rem' }}>
+    <div className="max-w-[800px] mx-auto py-8 px-4">
       <Link to="/parts" className="text-sm text-muted-foreground hover:text-foreground">
         &larr; Back to Parts
       </Link>

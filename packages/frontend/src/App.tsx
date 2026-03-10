@@ -13,7 +13,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <div style={styles.app}>
+          <div className="min-h-screen bg-background">
             <Header />
             <main>
               <Routes>
@@ -28,12 +28,5 @@ function App() {
     </QueryClientProvider>
   );
 }
-
-const styles = {
-  app: {
-    minHeight: '100vh',
-    backgroundColor: '#fff',
-  },
-};
 
 export default App;

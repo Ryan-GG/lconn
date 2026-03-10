@@ -7,39 +7,39 @@ export const Header = () => {
   const { user, login, logout } = useAuth();
 
   return (
-    <header style={styles.header}>
-      <div style={styles.container}>
-        <Link to="/" style={styles.logo}>
+    <header className="bg-card text-foreground py-4 mb-8">
+      <div className="max-w-[1200px] mx-auto px-4 flex justify-between items-center">
+        <Link to="/" className="text-foreground no-underline">
           <h1>LCONN</h1>
         </Link>
-        <nav style={styles.nav}>
-          <Link to="/parts" style={styles.navLink}>Parts</Link>
+        <nav className="flex items-center gap-6">
+          <Link to="/parts" className="text-foreground/90 no-underline text-sm">Parts</Link>
           <a
             href={`${API_URL}/api/docs`}
             target="_blank"
             rel="noopener noreferrer"
-            style={styles.navLink}
+            className="text-foreground/90 no-underline text-sm"
           >
             API Docs
           </a>
         </nav>
-        <nav style={styles.nav}>
+        <nav className="flex items-center gap-6">
           {user ? (
-            <div style={styles.userMenu}>
+            <div className="flex items-center gap-3">
               {user.image && (
                 <img
                   src={user.image}
                   alt={user.name}
-                  style={styles.avatar}
+                  className="w-8 h-8 rounded-full"
                 />
               )}
-              <span style={styles.username}>{user.name}</span>
-              <button onClick={logout} style={styles.button}>
+              <span className="text-sm">{user.name}</span>
+              <button onClick={logout} className="px-4 py-2 bg-primary text-primary-foreground border-none rounded cursor-pointer text-sm">
                 Logout
               </button>
             </div>
           ) : (
-            <button onClick={login} style={styles.button}>
+            <button onClick={login} className="px-4 py-2 bg-primary text-primary-foreground border-none rounded cursor-pointer text-sm">
               Login with GitHub
             </button>
           )}
@@ -47,58 +47,4 @@ export const Header = () => {
       </div>
     </header>
   );
-};
-
-const styles = {
-  header: {
-    backgroundColor: '#333',
-    color: 'white',
-    padding: '1rem 0',
-    marginBottom: '2rem',
-  },
-  container: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '0 1rem',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  logo: {
-    color: 'white',
-    textDecoration: 'none',
-  },
-  nav: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '1.5rem',
-  },
-  userMenu: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-  },
-  avatar: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-  },
-  username: {
-    fontSize: '0.9rem',
-  },
-  navLink: {
-    color: 'white',
-    textDecoration: 'none',
-    fontSize: '0.9rem',
-    opacity: 0.9,
-  },
-  button: {
-    padding: '0.5rem 1rem',
-    backgroundColor: '#0366d6',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.9rem',
-  },
 };

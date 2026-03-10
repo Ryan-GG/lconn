@@ -4,80 +4,24 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export const HomePage = () => {
   return (
-    <div style={styles.container}>
-      <div style={styles.hero}>
-        <h1 style={styles.title}>LCONN</h1>
-        <p style={styles.subtitle}>
+    <div className="max-w-[1200px] mx-auto px-4">
+      <div className="text-center py-16">
+        <h1 className="text-6xl m-0 text-foreground">LCONN</h1>
+        <p className="text-2xl text-muted-foreground mt-2">
           Crowdsourced LEGO Connection Specifications
         </p>
-        <p style={styles.description}>
+        <p className="text-lg text-muted-foreground max-w-[800px] mx-auto mt-8 leading-relaxed">
           Welcome to LCONN. Sign in with GitHub to get started.
         </p>
-        <div style={styles.cta}>
-          <Link to="/parts" style={styles.ctaButton}>
+        <div className="flex gap-4 justify-center mt-8">
+          <Link to="/parts" className="inline-block px-6 py-3 bg-primary text-primary-foreground rounded no-underline text-lg font-semibold">
             Browse Parts
           </Link>
-          <a href={`${API_URL}/api/docs`} target="_blank" rel="noopener noreferrer" style={styles.ctaButton}>
+          <a href={`${API_URL}/api/docs`} target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-3 bg-primary text-primary-foreground rounded no-underline text-lg font-semibold">
             API Docs
           </a>
         </div>
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '0 1rem',
-  },
-  hero: {
-    textAlign: 'center' as const,
-    padding: '4rem 0',
-  },
-  title: {
-    fontSize: '4rem',
-    margin: '0',
-    color: '#333',
-  },
-  subtitle: {
-    fontSize: '1.5rem',
-    color: '#666',
-    marginTop: '0.5rem',
-  },
-  description: {
-    fontSize: '1.1rem',
-    color: '#666',
-    maxWidth: '800px',
-    margin: '2rem auto',
-    lineHeight: '1.6',
-  },
-  cta: {
-    display: 'flex',
-    gap: '1rem',
-    justifyContent: 'center',
-    marginTop: '2rem',
-  },
-  ctaButton: {
-    display: 'inline-block',
-    padding: '0.75rem 1.5rem',
-    backgroundColor: '#0366d6',
-    color: 'white',
-    borderRadius: '4px',
-    textDecoration: 'none',
-    fontSize: '1.1rem',
-    fontWeight: 600,
-  } as React.CSSProperties,
-  ctaButtonOutline: {
-    display: 'inline-block',
-    padding: '0.75rem 1.5rem',
-    backgroundColor: 'transparent',
-    color: '#0366d6',
-    border: '2px solid #0366d6',
-    borderRadius: '4px',
-    textDecoration: 'none',
-    fontSize: '1.1rem',
-    fontWeight: 600,
-  } as React.CSSProperties,
 };
