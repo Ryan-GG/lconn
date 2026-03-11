@@ -45,12 +45,14 @@ function SpinningMesh({ geometries }: { geometries: LdrawPartGeometry[] }) {
   useFrame((_state, delta) => {
     if (groupRef.current) {
       groupRef.current.rotation.y += 0.5 * delta;
+      groupRef.current.rotation.x += 0.5 * delta;
+      groupRef.current.rotation.z += 0.5 * delta;
     }
   });
 
   return (
     <group ref={groupRef}>
-      <group position={[-center.x, -center.y, -center.z]} scale={[scale, -scale, scale]}>
+      <group position={[center.x, center.y, center.z]} scale={[scale, -scale, scale]}>
         {resolved.trianglePositions.length > 0 && (
           <mesh geometry={triGeom}>
             <meshBasicMaterial wireframe color="#4a9eff" />
