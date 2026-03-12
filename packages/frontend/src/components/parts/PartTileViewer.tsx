@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import * as THREE from 'three';
 import type { LdrawPartGeometry } from '@lconn/shared';
 import { fetchGeometry, buildGeometry } from '@/lib/ldraw-geometry';
+import { Grid } from '@react-three/drei';
 
 function SpinningMesh({ geometries }: { geometries: LdrawPartGeometry[] }) {
   const groupRef = useRef<THREE.Group>(null);
@@ -23,7 +24,7 @@ function SpinningMesh({ geometries }: { geometries: LdrawPartGeometry[] }) {
   }, [resolved.trianglePositions]);
 
   // Compute bounds and normalize scale
-  const { center, scale } = useMemo(() => {
+  const { min, max, center, scale } = useMemo(() => {
     const box = new THREE.Box3();
     if (resolved.trianglePositions.length > 0) {
       triGeom.computeBoundingBox();
@@ -33,13 +34,12 @@ function SpinningMesh({ geometries }: { geometries: LdrawPartGeometry[] }) {
       lineGeom.computeBoundingBox();
       if (lineGeom.boundingBox) box.union(lineGeom.boundingBox);
     }
-    const c = new THREE.Vector3();
-    box.getCenter(c);
+    const center = box.getCenter(new THREE.Vector3());
     const size = box.getSize(new THREE.Vector3()).length();
     // Normalize so all parts fit in roughly the same visual size
     const targetSize = 100;
     const s = size > 0 ? targetSize / size : 1;
-    return { center: c, scale: s };
+    return { min: box.min, max: box.max, center, scale: s };
   }, [triGeom, lineGeom, resolved]);
 
   useFrame((_state, delta) => {
@@ -51,8 +51,17 @@ function SpinningMesh({ geometries }: { geometries: LdrawPartGeometry[] }) {
   });
 
   return (
-    <group ref={groupRef}>
-      <group position={[center.x, center.y, center.z]} scale={[scale, -scale, scale]}>
+    <group>
+      <Grid
+      position={[center.x, min.y, center.z]}
+      infiniteGrid
+      cellSize={0.2}
+      sectionSize={scale}
+      fadeDistance={500}
+      fadeStrength={50}
+      cellColor="#084386"
+      />
+      <group position={[center.x, center.y, center.z]} scale={[scale, -scale, scale]} ref={groupRef}>
         {resolved.trianglePositions.length > 0 && (
           <mesh geometry={triGeom}>
             <meshBasicMaterial wireframe color="#4a9eff" />
@@ -60,7 +69,7 @@ function SpinningMesh({ geometries }: { geometries: LdrawPartGeometry[] }) {
         )}
         {resolved.linePositions.length > 0 && (
           <lineSegments geometry={lineGeom}>
-            <lineBasicMaterial color="#ffffff" />
+            <lineBasicMaterial color="#4a9eff" />
           </lineSegments>
         )}
       </group>
@@ -101,7 +110,6 @@ export function PartTileViewer({ filename, enabled }: PartTileViewerProps) {
     <div className="h-[180px] w-full bg-black/90 rounded-t-lg">
       <Canvas
         camera={{ position: [0, 0, 150], fov: 50 }}
-        gl={{ antialias: false, powerPreference: 'low-power' }}
         dpr={[1, 1.5]}
       >
         <ambientLight intensity={0.5} />
